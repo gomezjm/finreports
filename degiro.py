@@ -6,6 +6,11 @@ from datetime import datetime, timedelta, timezone
 import numpy as np 
 import pandas as pd
 import krakenex
+import os
+
+
+if not os.path.exists('./csv'):
+    os.makedirs('./csv')
 
 # DEGIRO--------
 try:
@@ -97,12 +102,12 @@ try:
     kr_output = output = pd.concat([order_hist_df,position_df],axis=0)
 
     finreport = pd.concat([de_output,kr_output],axis=0)
-    filename = './files/finreport' + today.strftime("%y%m%d%H%M") + '.csv'
+    filename = './csv/finreport' + today.strftime("%y%m%d") + '.csv'
     finreport.to_csv(filename,index=False)
     print(finreport)
 except Exception as e:
     print("No existe kraken.key")
     print(e)
-    filename = './files/finreport' + today.strftime("%y%m%d%H%M") + '.csv'
+    filename = './csv/finreport' + today.strftime("%y%m%d") + '.csv'
     de_output.to_csv(filename,index=False)
     print(de_output)
