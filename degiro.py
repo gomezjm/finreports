@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 import krakenex
 import os
 
-
-if not os.path.exists('./csv'):
-    os.makedirs('./csv')
-if not os.path.exists('./plots'):
-    os.makedirs('./plots')
+basepath = os.path.dirname(__file__)
+if not os.path.exists(os.path.join(basepath,'csv')):
+    os.makedirs(os.path.join(basepath,'csv'))
+if not os.path.exists(os.path.join(basepath,'plots')):
+    os.makedirs(os.path.join(basepath,'plots'))
 
 # DEGIRO--------
 try:
-    creds = pd.read_csv('./cred.csv')
+    creds = pd.read_csv(os.path.join(basepath,'cred.csv'))
     print("Credenciales cargadas correctamente")
 except Exception as e:
     print("Imposible leer archivo ./cred.csv")
@@ -70,7 +70,7 @@ de_output = pd.concat([portfolio_df,transactions_df],axis=0)
 #configure api
 k = krakenex.API()
 try:
-    k.load_key('./kraken.key')
+    k.load_key(os.path.join(basepath,'kraken.key'))
     open_positions = k.query_private('Ledgers')
 
     order_hist = []
@@ -105,13 +105,13 @@ try:
     kr_output = output = pd.concat([order_hist_df,position_df],axis=0)
 
     finreport = pd.concat([de_output,kr_output],axis=0)
-    filename = './csv/finreport' + today.strftime("%y%m%d") + '.csv'
+    filename = os.path.join(basepath,'csv',f'finreport{today.strftime("%y%m%d")}.csv')
     finreport.to_csv(filename,index=False)
     print(finreport)
 except Exception as e:
     print("No existe kraken.key")
     print(e)
-    filename = './csv/finreport' + today.strftime("%y%m%d") + '.csv'
+    filename = os.path.join(basepath,'csv',f'finreport{today.strftime("%y%m%d")}.csv')
     de_output.to_csv(filename,index=False)
     print(de_output)
 
@@ -119,16 +119,16 @@ except Exception as e:
 
 date_to_filter = today.strftime("%d/%m/%y")
 datefile = today.strftime("%y%m%d")
-a = pd.read_csv(f'./csv/finreport{today.strftime("%y%m%d")}.csv')
+a = pd.read_csv(os.path.join(basepath,'csv',f'finreport{today.strftime("%y%m%d")}.csv'))
 b = a[a['date'] == date_to_filter]
 bb=b[['type','value']]
 cc=pd.pivot_table(bb,values='value',index='type',aggfunc=np.sum,fill_value=0)
 pieplot = cc.plot.pie(y='value',label='',autopct='%1.0f%%',labeldistance=1.2,figsize=(5, 5))
 plt.title(f'Distribucion cartera - {date_to_filter}')
 plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.15), ncol= 2)
-plt.savefig(f'./plots/dist{datefile}.png')
+plt.savefig(os.path.join(basepath,'plots',f'dist{datefile}.png'))
 barplot = cc.plot.bar(y='value',label='',rot=0,figsize=(5, 5))
 plt.title(f'Valor cartera (€) - {date_to_filter}')
 for index,value in enumerate(list(cc['value'])):
     plt.annotate(f'{str(int(value))}€',(index,value+50),ha='center',weight='bold')
-plt.savefig(f'./plots/value{datefile}.png')
+plt.savefig(os.path.join(basepath,'plots',f'value{datefile}.png'))
